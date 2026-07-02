@@ -21,6 +21,12 @@ gem "jbuilder"
 
 gem "devise"
 
+# JWT auth for the payments API
+gem "jwt"
+
+# XML request/response support for the payments API (Hash#from_xml / #to_xml)
+gem "rexml"
+
 # Views
 gem "slim-rails"
 
