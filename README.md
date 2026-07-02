@@ -1,24 +1,139 @@
-# README
+# Payments Dashboard
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A small Rails app for managing merchants and their payment transactions:
+admins manage merchants from a web UI, merchants submit transactions
+(authorize / capture / refund / void) through a JWT-authenticated API, and
+everyone with access can see the resulting transaction history.
 
-Things you may want to cover:
+Built as a take-home exercise, so the README doubles as a guide to what's
+here and why, not just a run book.
 
-* Ruby version
+## Stack
 
-* System dependencies
+- Rails 8.1, Postgres, Slim + Bootstrap for views
+- Devise for the admin/merchant login, a separate hand-rolled JWT layer for
+  the API (see "Merchant and User are two different things" below — these
+  are deliberately not the same thing)
+- Solid Queue for background jobs, RSpec/FactoryBot/Capybara/Shoulda
+  Matchers for tests, Rubocop + Brakeman for linting/security
 
-* Configuration
+## Running it
 
-* Database creation
+### Docker (easiest)
 
-* Database initialization
+```
+docker compose up
+```
 
-* How to run the test suite
+Builds the app image, starts Postgres, waits for it to be healthy, migrates
+and seeds the database, and boots the server at http://localhost:3000.
+Source is bind-mounted, so code changes reload like normal.
 
-* Services (job queues, cache servers, search engines, etc.)
+### Natively
 
-* Deployment instructions
+Needs Ruby 4.0.2 and a local Postgres.
 
-* ...
+```
+bundle install
+bin/rails db:prepare
+bin/rails db:seed
+bin/rails server
+```
+
+## Trying it out
+
+Seeded accounts (password is `password123` for all of them):
+
+- Admin: `admin@payments-dashboard.test`
+- Merchants (UI login *and* API credentials — see below): `acme@payments-dashboard.test`,
+  `globex@payments-dashboard.test` (both active), `initech@payments-dashboard.test` (inactive)
+
+Sign in at `/users/sign_in`. Admins land on `/admin/merchants` (create, edit,
+delete) and everyone lands on `/transactions`, scoped to their own merchant
+unless they're an admin.
+
+### The API
+
+A merchant authenticates with its own credentials (not the UI login) to get
+a token, then submits transactions with it:
+
+```
+curl -X POST localhost:3000/api/v1/tokens \
+  -d "email=acme@payments-dashboard.test" -d "password=password123"
+# => {"token":"eyJ..."}
+
+curl -X POST localhost:3000/api/v1/transactions \
+  -H "Authorization: Bearer eyJ..." \
+  -d "type=authorize" -d "amount=100" \
+  -d "customer_email=buyer@example.com" \
+  -d "notification_url=https://example.com/webhook"
+```
+
+`type` is one of `authorize` / `capture` / `refund` / `void`; capture/refund/void
+also take a `referenced_transaction_uuid` pointing at the transaction they act
+on. Both JSON and XML bodies work; XML in gets an XML response back unless
+you ask for JSON explicitly.
+
+## Tests
+
+```
+bundle exec rspec        # models, services, jobs, requests, and Capybara feature specs
+bundle exec rubocop
+bin/brakeman
+```
+
+## Why it's built this way
+
+A few decisions worth explaining rather than leaving implicit:
+
+**Transactions are one table, four classes.** `Transaction` is a normal STI
+setup — `AuthorizeTransaction`, `CaptureTransaction`, `RefundTransaction`,
+`VoidTransaction` — because they share almost everything (status, amount,
+the merchant they belong to, the transaction they reference) and differ only
+in validation rules and what happens on success. The shared "does this
+reference a transaction in the right state, and is the amount within what's
+left" logic lives in one concern (`ReferenceableTransaction`) instead of
+being copy-pasted three times.
+
+**Business logic lives in services, not models or controllers.** Creating a
+transaction has real rules (an invalid capture/refund/void still gets
+persisted with `status: error` rather than rejected outright; a successful
+one flips the status of whatever it references). That's product logic, not
+validation, so it's in `app/services/transactions/*`, and controllers just
+call into it.
+
+**Merchant and User are two different things on purpose.** `User` (Devise)
+is who's allowed into the web UI and what they can see there. `Merchant` has
+its own separate password and is what the JWT API authenticates against.
+Conflating them would mean a merchant's UI password and API credentials are
+the same secret, which isn't how you'd want a real payments integration to
+work.
+
+**Background jobs are real, but the queue backend differs by environment.**
+`TransactionProcessingJob` settles a pending authorization asynchronously and
+fires `NotificationJob`, which POSTs the result to the merchant's webhook.
+Production runs these on Solid Queue (it already has the multi-database
+setup for it); development just uses Rails' in-process `:async` adapter,
+since setting up a second local database for job storage isn't worth it for
+running the app locally. There's also a recurring job
+(`StaleAuthorizationSweeperJob`, see `config/recurring.yml`) that marks
+authorizations still pending after an hour as errored — a normal request
+settles almost instantly, so anything stuck that long means a job actually
+failed somewhere.
+
+**Every status change is audited, generically.** `AuditLog` belongs to
+either a `Merchant` or a `Transaction` polymorphically, and a shared
+`Auditable` concern hooks `after_update` on both, so any status transition
+gets logged automatically no matter which code path caused it.
+
+## What's not here
+
+- The audit log is backend-only right now — there's no UI for browsing it.
+  Given it's already attached to both merchants and transactions, the
+  natural next step is a small "Activity" list on their show pages.
+- CI (`.github/workflows/ci.yml`) runs Brakeman, bundler-audit, importmap
+  audit, and Rubocop, but doesn't run the test suite yet — that's the
+  obvious next addition.
+- There's no scripted way to run the test suite inside Docker (e.g. a
+  `docker compose run` variant with a test database); right now tests are
+  expected to run against a native Ruby/Postgres setup.
