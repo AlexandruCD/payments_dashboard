@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Merchant < ApplicationRecord
+  include Auditable
+
   # Own credentials, used for JWT auth (separate from User, which is UI-only)
   has_secure_password
 

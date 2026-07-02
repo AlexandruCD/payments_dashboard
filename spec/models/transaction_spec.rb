@@ -79,6 +79,19 @@ RSpec.describe Transaction, type: :model do
     end
   end
 
+  describe 'audit logging' do
+    it 'logs a status change' do
+      authorize = create(:authorize_transaction, status: 'approved')
+      expect { authorize.update!(status: 'voided') }.to change(authorize.audit_logs, :count).by(1)
+      expect(authorize.audit_logs.last.details).to eq('approved -> voided')
+    end
+
+    it 'does not log an update that leaves status unchanged' do
+      authorize = create(:authorize_transaction, status: 'approved')
+      expect { authorize.update!(customer_phone: '+15559990000') }.not_to change(authorize.audit_logs, :count)
+    end
+  end
+
   describe 'scopes' do
     let(:merchant) { create(:merchant) }
 

@@ -85,6 +85,19 @@ RSpec.describe Merchant, type: :model do
     end
   end
 
+  describe 'audit logging' do
+    it 'logs a status change' do
+      merchant = create(:merchant, status: 'active')
+      expect { merchant.update!(status: 'inactive') }.to change(merchant.audit_logs, :count).by(1)
+      expect(merchant.audit_logs.last.details).to eq('active -> inactive')
+    end
+
+    it 'does not log an update that leaves status unchanged' do
+      merchant = create(:merchant, status: 'active')
+      expect { merchant.update!(name: 'New Name') }.not_to change(merchant.audit_logs, :count)
+    end
+  end
+
   describe 'deletion protection' do
     it 'cannot be deleted when it has transactions' do
       merchant = create(:merchant)

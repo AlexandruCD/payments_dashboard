@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Transaction < ApplicationRecord
+  include Auditable
+
   belongs_to :merchant
   belongs_to :referenced_transaction, class_name: "Transaction", optional: true
 
