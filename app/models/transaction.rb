@@ -14,6 +14,7 @@ class Transaction < ApplicationRecord
   validates :status,         presence: true, inclusion: { in: STATUSES }
   validates :amount,         numericality: { greater_than: 0 }, allow_nil: true
 
+  scope :pending,   -> { where(status: "pending") }
   scope :approved,  -> { where(status: "approved") }
   scope :captured,  -> { where(status: "captured") }
   scope :voided,    -> { where(status: "voided") }

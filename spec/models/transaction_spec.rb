@@ -96,14 +96,19 @@ RSpec.describe Transaction, type: :model do
     let(:merchant) { create(:merchant) }
 
     before do
+      create(:authorize_transaction, merchant: merchant)
       Transaction::STATUSES.each do |s|
-        next if s == 'pending' # pending only for authorize
+        next if s == 'pending' # already created above
         create(:authorize_transaction, merchant: merchant, status: s) if s == 'approved'
         create(:capture_transaction, merchant: merchant, status: s) if s == 'captured'
         create(:void_transaction, merchant: merchant, status: s) if s == 'voided'
         create(:refund_transaction, merchant: merchant, status: s) if s == 'refunded'
       end
       create(:authorize_transaction, merchant: merchant, status: 'error')
+    end
+
+    it '.pending returns only pending transactions' do
+      expect(Transaction.pending.map(&:status)).to all(eq('pending'))
     end
 
     it '.approved returns only approved transactions' do
