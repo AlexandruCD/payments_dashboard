@@ -19,7 +19,7 @@ module Transactions
         customer_phone: @params[:customer_phone],
         notification_url: @params[:notification_url]
       )
-      transaction.save
+      TransactionProcessingJob.perform_later(transaction) if transaction.save
       transaction
     end
   end

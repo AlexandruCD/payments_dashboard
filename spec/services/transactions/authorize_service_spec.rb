@@ -29,6 +29,11 @@ RSpec.describe Transactions::AuthorizeService do
         transaction = described_class.call(merchant: merchant, params: params.merge(status: "approved"))
         expect(transaction.status).to eq("pending")
       end
+
+      it "enqueues a job to process the transaction" do
+        expect { described_class.call(merchant: merchant, params: params) }
+          .to have_enqueued_job(TransactionProcessingJob)
+      end
     end
 
     context "with invalid params" do
@@ -39,6 +44,11 @@ RSpec.describe Transactions::AuthorizeService do
 
         expect(transaction).not_to be_persisted
         expect(transaction.errors).not_to be_empty
+      end
+
+      it "does not enqueue a processing job" do
+        expect { described_class.call(merchant: merchant, params: params) }
+          .not_to have_enqueued_job(TransactionProcessingJob)
       end
     end
   end
