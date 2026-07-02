@@ -1,0 +1,23 @@
+h1 = "Edit #{@merchant.name}"
+
+= render "shared/error_messages", object: @merchant
+
+= form_with model: @merchant, url: admin_merchant_path(@merchant), local: true do |f|
+  .mb-3
+    = f.label :name, class: "form-label"
+    = f.text_field :name, class: "form-control"
+
+  .mb-3
+    = f.label :description, class: "form-label"
+    = f.text_area :description, class: "form-control"
+
+  .mb-3
+    = f.label :email, class: "form-label"
+    = f.email_field :email, class: "form-control"
+
+  .mb-3
+    = f.label :status, class: "form-label"
+    = f.select :status, Merchant::STATUSES, {}, class: "form-select"
+
+  = f.submit "Update Merchant", class: "btn btn-primary me-2"
+  = link_to "Cancel", admin_merchant_path(@merchant), class: "btn btn-secondary"

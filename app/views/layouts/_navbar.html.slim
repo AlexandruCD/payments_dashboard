@@ -1,0 +1,21 @@
+nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+  .container
+    = link_to "Payments Dashboard", root_path, class: "navbar-brand"
+
+    ul.navbar-nav.me-auto
+      - if user_signed_in?
+        li.nav-item
+          = link_to "Transactions", transactions_path, class: "nav-link"
+        - if current_user.admin?
+          li.nav-item
+            = link_to "Merchants", admin_merchants_path, class: "nav-link"
+
+    ul.navbar-nav.ms-auto
+      - if user_signed_in?
+        li.nav-item.navbar-text.text-white-50.me-3
+          = "#{current_user.email} (#{current_user.role})"
+        li.nav-item
+          = button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn btn-outline-light btn-sm"
+      - else
+        li.nav-item
+          = link_to "Sign in", new_user_session_path, class: "nav-link"

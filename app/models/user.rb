@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 class User < ApplicationRecord
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+  # No :registerable — users are only ever created via seeds or the admin
+  # merchant form, never self-signup.
+  devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
   ROLES = %w[admin merchant].freeze
 

@@ -1,0 +1,41 @@
+.d-flex.justify-content-between.align-items-center.mb-3
+  h1 = @merchant.name
+  .d-flex.gap-2
+    = link_to "Edit", edit_admin_merchant_path(@merchant), class: "btn btn-outline-secondary"
+    = link_to "Back", admin_merchants_path, class: "btn btn-secondary"
+
+dl.row
+  dt.col-sm-2 Email
+  dd.col-sm-10 = @merchant.email
+
+  dt.col-sm-2 Description
+  dd.col-sm-10 = @merchant.description
+
+  dt.col-sm-2 Status
+  dd.col-sm-10
+    span.badge class=(@merchant.active? ? "bg-success" : "bg-secondary") = @merchant.status
+
+h2.mt-4 Transactions
+
+- if @transactions.empty?
+  p.text-muted No transactions yet.
+- else
+  table.table.table-striped.align-middle
+    thead
+      tr
+        th UUID
+        th Type
+        th Status
+        th Amount
+        th Created
+
+    tbody
+      - @transactions.each do |transaction|
+        tr
+          td
+            code = transaction.uuid[0, 8]
+          td = transaction.type_label
+          td
+            span.badge class=transaction.status_badge_class = transaction.status
+          td = transaction.formatted_amount
+          td = transaction.created_at.strftime("%Y-%m-%d %H:%M")

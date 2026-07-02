@@ -1,0 +1,32 @@
+h1 Transactions
+
+- if @transactions.empty?
+  p.text-muted No transactions yet.
+- else
+  table.table.table-striped.align-middle
+    thead
+      tr
+        th UUID
+        th Type
+        th Status
+        th Amount
+        - if current_user.admin?
+          th Merchant
+        th Customer
+        th Created
+        th
+
+    tbody
+      - @transactions.each do |transaction|
+        tr
+          td
+            code = transaction.uuid[0, 8]
+          td = transaction.type_label
+          td
+            span.badge class=transaction.status_badge_class = transaction.status
+          td = transaction.formatted_amount
+          - if current_user.admin?
+            td = transaction.merchant.name
+          td = transaction.customer_email
+          td = transaction.created_at.strftime("%Y-%m-%d %H:%M")
+          td = link_to "View", transaction_path(transaction.id)

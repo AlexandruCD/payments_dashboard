@@ -1,0 +1,40 @@
+# frozen_string_literal: true
+
+class TransactionPresenter
+  include ActionView::Helpers::NumberHelper
+
+  STATUS_BADGE_CLASSES = {
+    "pending" => "bg-secondary",
+    "approved" => "bg-success",
+    "captured" => "bg-info",
+    "refunded" => "bg-warning",
+    "voided" => "bg-dark",
+    "error" => "bg-danger"
+  }.freeze
+
+  delegate :id, :uuid, :status, :customer_email, :customer_phone, :created_at, :merchant, to: :transaction
+
+  def initialize(transaction)
+    @transaction = transaction
+  end
+
+  def type_label
+    transaction.type.sub("Transaction", "")
+  end
+
+  def formatted_amount
+    transaction.amount.nil? ? "—" : number_to_currency(transaction.amount)
+  end
+
+  def status_badge_class
+    STATUS_BADGE_CLASSES.fetch(status, "bg-secondary")
+  end
+
+  def referenced_uuid
+    transaction.referenced_transaction&.uuid
+  end
+
+  private
+
+  attr_reader :transaction
+end
