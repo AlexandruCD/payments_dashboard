@@ -10,4 +10,11 @@ class ApplicationController < ActionController::Base
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
+
+  # Devise's own default (root_path) is itself auth-protected, so signing out
+  # would immediately bounce again through authenticate_user!, swallowing the
+  # "Signed out successfully" flash under a second "You need to sign in" one.
+  def after_sign_out_path_for(_resource_or_scope)
+    new_user_session_path
+  end
 end

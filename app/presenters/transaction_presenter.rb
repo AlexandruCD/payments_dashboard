@@ -12,7 +12,10 @@ class TransactionPresenter
     "error" => "bg-danger"
   }.freeze
 
-  delegate :id, :uuid, :status, :customer_email, :customer_phone, :created_at, :merchant, to: :transaction
+  # to_param delegated so path helpers (e.g. transaction_path(presenter)) resolve to
+  # the real record's id instead of falling back to Object#to_param (its inspect string).
+  delegate :id, :uuid, :status, :customer_email, :customer_phone, :created_at, :merchant, :to_param,
+           to: :transaction
 
   def initialize(transaction)
     @transaction = transaction

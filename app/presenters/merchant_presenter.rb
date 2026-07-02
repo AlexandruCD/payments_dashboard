@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 class MerchantPresenter
-  delegate :id, :name, :description, :email, :status, :transactions, to: :merchant
+  # to_param delegated so path helpers (e.g. admin_merchant_path(presenter)) resolve
+  # to the real record's id instead of falling back to Object#to_param (its inspect string).
+  delegate :id, :name, :description, :email, :status, :transactions, :to_param, to: :merchant
 
   def initialize(merchant)
     @merchant = merchant

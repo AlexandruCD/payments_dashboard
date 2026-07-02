@@ -11,8 +11,12 @@ class TransactionsController < AuthenticatedController
 
   private
 
-  # Admins see every transaction; merchants only ever see their own.
+  # Admins see every transaction; merchants only ever see their own. A
+  # merchant-role user without a linked Merchant (shouldn't happen, but not
+  # impossible to end up with via the console) simply sees nothing.
   def scope
-    current_user.admin? ? Transaction.all : current_user.merchant.transactions
+    return Transaction.all if current_user.admin?
+
+    current_user.merchant&.transactions || Transaction.none
   end
 end
