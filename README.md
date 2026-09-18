@@ -107,6 +107,11 @@ with `success?`, `failure?`, `entity`, and `errors`. Each error includes an
 attribute, a symbolic code, and a full message. A saved error transaction is
 a failure result, but still receives HTTP 201; an invalid authorization is
 unsaved and receives HTTP 422. Unexpected infrastructure errors propagate.
+`Transactions::CreateTransactionService` dispatches the allowlisted type to
+its creation service. `Api::V1::TransactionPresenter` builds the response
+fields for JSON/XML, while the controller chooses the HTTP status. UI and
+API presenters share initialization through `ApplicationPresenter`; UI
+formatting stays separate from the API payload.
 
 **Merchant and User are two different things on purpose.** `User` (Devise)
 is who's allowed into the web UI and what they can see there. `Merchant` has

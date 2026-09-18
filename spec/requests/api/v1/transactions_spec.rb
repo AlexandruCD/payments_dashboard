@@ -43,6 +43,8 @@ RSpec.describe "Api::V1::Transactions", type: :request do
       expect(response).to have_http_status(:created)
       expect(response.parsed_body["status"]).to eq("pending")
       expect(response.parsed_body["type"]).to eq("AuthorizeTransaction")
+      expect(response.parsed_body.keys).to match_array(%w[uuid type status amount customer_email customer_phone])
+      expect(response.parsed_body["amount"]).to eq("100.0")
     end
 
     it "ignores a client-supplied status" do
@@ -54,12 +56,13 @@ RSpec.describe "Api::V1::Transactions", type: :request do
       post "/api/v1/transactions", params: valid_params.merge(notification_url: nil), headers: auth_headers
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.parsed_body["errors"]).to be_present
+      expect(response.parsed_body).to eq("errors" => [ "Notification url can't be blank" ])
     end
 
     it "rejects an unknown transaction type" do
       post "/api/v1/transactions", params: { type: "bogus" }, headers: auth_headers
       expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body).to eq("error" => "invalid transaction type")
     end
   end
 
@@ -127,6 +130,34 @@ RSpec.describe "Api::V1::Transactions", type: :request do
   end
 
   describe "XML support" do
+    it "returns the existing error shape for an unknown type" do
+      post "/api/v1/transactions", params: { type: "bogus" }.to_xml(root: "transaction"),
+                                    headers: auth_headers.merge("Content-Type" => "application/xml", "Accept" => "application/xml")
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(Hash.from_xml(response.body)).to eq("hash" => { "error" => "invalid transaction type" })
+    end
+
+    it "returns validation messages for an unsaved authorization" do
+      params = { type: "authorize", amount: 100, customer_email: "buyer@example.com" }
+      post "/api/v1/transactions", params: params.to_xml(root: "transaction"),
+                                    headers: auth_headers.merge("Content-Type" => "application/xml", "Accept" => "application/xml")
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(Hash.from_xml(response.body)["hash"]["errors"]).to eq([ "Notification url can't be blank" ])
+    end
+
+    it "returns a created error record for an invalid capture" do
+      params = { type: "capture", amount: 40, referenced_transaction_uuid: "missing" }
+      post "/api/v1/transactions", params: params.to_xml(root: "transaction"),
+                                    headers: auth_headers.merge("Content-Type" => "application/xml", "Accept" => "application/xml")
+
+      expect(response).to have_http_status(:created)
+      body = Hash.from_xml(response.body)["hash"]
+      expect(body).to include("type" => "CaptureTransaction", "status" => "error", "amount" => BigDecimal("40"))
+      expect(body.keys).to match_array(%w[uuid type status amount customer_email customer_phone])
+    end
+
     it "accepts an XML request body and responds with XML" do
       xml_body = {
         type: "authorize", amount: 100, customer_email: "customer@example.com",

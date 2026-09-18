@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class TransactionPresenter
+class TransactionPresenter < ApplicationPresenter
   include ActionView::Helpers::NumberHelper
 
   STATUS_BADGE_CLASSES = {
@@ -16,10 +16,6 @@ class TransactionPresenter
   # the real record's id instead of falling back to Object#to_param (its inspect string).
   delegate :id, :uuid, :status, :customer_email, :customer_phone, :created_at, :merchant, :to_param,
            to: :transaction
-
-  def initialize(transaction)
-    @transaction = transaction
-  end
 
   def type_label
     transaction.type.sub("Transaction", "")
@@ -39,5 +35,5 @@ class TransactionPresenter
 
   private
 
-  attr_reader :transaction
+  alias_method :transaction, :entity
 end
