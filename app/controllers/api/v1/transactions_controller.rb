@@ -6,10 +6,10 @@ module Api
       include JwtAuthenticatable
 
       SERVICES = {
-        "authorize" => Transactions::AuthorizeService,
-        "capture" => Transactions::CaptureService,
-        "refund" => Transactions::RefundService,
-        "void" => Transactions::VoidService
+        "authorize" => Transactions::CreateAuthorizeService,
+        "capture" => Transactions::CreateCaptureService,
+        "refund" => Transactions::CreateRefundService,
+        "void" => Transactions::CreateVoidService
       }.freeze
 
       def create
@@ -20,12 +20,15 @@ module Api
           return
         end
 
-        transaction = service_class.call(merchant: current_merchant, params: transaction_params)
+        result = service_class.call(merchant: current_merchant, params: transaction_params)
 
+        transaction = result.entity
+
+        # Failed follow-up submissions are still created as error records.
         if transaction.persisted?
           render_payload(transaction_json(transaction), status: :created)
         else
-          render_payload({ errors: transaction.errors.full_messages }, status: :unprocessable_content)
+          render_payload({ errors: result.errors.map { |error| error[:message] } }, status: :unprocessable_content)
         end
       end
 

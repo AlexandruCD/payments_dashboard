@@ -100,7 +100,13 @@ transaction has real rules (an invalid capture/refund/void still gets
 persisted with `status: error` rather than rejected outright; a successful
 one flips the status of whatever it references). That's product logic, not
 validation, so it's in `app/services/transactions/*`, and controllers just
-call into it.
+call into it. The stateless `Transactions::CreateAuthorizeService`,
+`CreateCaptureService`, `CreateRefundService`, and `CreateVoidService` share
+`ApplicationService.call(merchant:, params:)` and return a `ServiceResult`
+with `success?`, `failure?`, `entity`, and `errors`. Each error includes an
+attribute, a symbolic code, and a full message. A saved error transaction is
+a failure result, but still receives HTTP 201; an invalid authorization is
+unsaved and receives HTTP 422. Unexpected infrastructure errors propagate.
 
 **Merchant and User are two different things on purpose.** `User` (Devise)
 is who's allowed into the web UI and what they can see there. `Merchant` has

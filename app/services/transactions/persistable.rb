@@ -10,11 +10,13 @@ module Transactions
     def persist_or_error(transaction)
       if transaction.valid?
         transaction.save!
+        ServiceResult.success(entity: transaction)
       else
+        result = validation_failure(transaction)
         transaction.status = "error"
         transaction.save!(validate: false)
+        result
       end
-      transaction
     end
   end
 end
