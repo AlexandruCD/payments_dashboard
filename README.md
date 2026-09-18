@@ -121,8 +121,15 @@ the same secret, which isn't how you'd want a real payments integration to
 work.
 
 **Background jobs are real, but the queue backend differs by environment.**
-`TransactionProcessingJob` settles a pending authorization asynchronously and
-fires `NotificationJob`, which POSTs the result to the merchant's webhook.
+`TransactionProcessingJob` delegates settlement to
+`Transactions::ProcessAuthorizationService`, which updates a pending
+authorization and enqueues `NotificationJob`. That job delegates the webhook
+form POST to `Notifications::SendTransactionNotificationService`; retry
+configuration stays in the job, and network exceptions propagate from the
+service. These services return `ServiceResult`: processing returns the
+transaction, and notification sending returns the HTTP response. Notification
+success currently means the request completed, not that the endpoint returned
+2xx; response-status handling is unchanged.
 Production runs these on Solid Queue (it already has the multi-database
 setup for it); development just uses Rails' in-process `:async` adapter,
 since setting up a second local database for job storage isn't worth it for
@@ -130,7 +137,10 @@ running the app locally. There's also a recurring job
 (`StaleAuthorizationSweeperJob`, see `config/recurring.yml`) that marks
 authorizations still pending after an hour as errored — a normal request
 settles almost instantly, so anything stuck that long means a job actually
-failed somewhere.
+failed somewhere. The sweeper job delegates to
+`Transactions::SweepStaleAuthorizationsService`, which owns the one-hour
+threshold and returns a successful result without an entity when the sweep
+completes.
 
 **Every status change is audited, generically.** `AuditLog` belongs to
 either a `Merchant` or a `Transaction` polymorphically, and a shared
