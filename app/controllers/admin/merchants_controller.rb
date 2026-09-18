@@ -56,7 +56,7 @@ module Admin
 
     def merchant_registration_params
       params.require(:merchant_registration_form)
-            .permit(:name, :description, :email, :status, :password, :user_email, :user_password)
+            .permit(:name, :description, :email, :status, :user_email, :user_password)
     end
   end
 end

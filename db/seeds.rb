@@ -27,7 +27,6 @@ merchants.each do |attrs|
     merchant.name        = attrs[:name]
     merchant.description = attrs[:description]
     merchant.status      = attrs[:status]
-    merchant.password    = SEED_PASSWORD
     merchant.user        = user
   end
 end

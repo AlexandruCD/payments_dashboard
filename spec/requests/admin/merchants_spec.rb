@@ -28,7 +28,7 @@ RSpec.describe "Admin::Merchants", type: :request do
       {
         merchant_registration_form: {
           name: "Acme", description: "Retail", email: "acme@example.com", status: "active",
-          password: "password123", user_email: "acme-login@example.com", user_password: "password123"
+          user_email: "acme-login@example.com", user_password: "password123"
         }
       }
     end

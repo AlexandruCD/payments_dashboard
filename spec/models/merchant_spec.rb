@@ -27,25 +27,6 @@ RSpec.describe Merchant, type: :model do
       merchant.email = 'merchant@example.com'
       expect(merchant).to be_valid
     end
-
-    it 'requires a password on create' do
-      merchant.password = nil
-      expect(merchant).not_to be_valid
-      expect(merchant.errors[:password]).to be_present
-    end
-
-    it 'rejects a password shorter than 8 characters' do
-      merchant.password = 'short'
-      expect(merchant).not_to be_valid
-      expect(merchant.errors[:password]).to be_present
-    end
-
-    it 'authenticates with the correct password' do
-      merchant.password = 'password123'
-      merchant.save!
-      expect(merchant.authenticate('password123')).to eq(merchant)
-      expect(merchant.authenticate('wrong')).to be false
-    end
   end
 
   describe 'scopes' do

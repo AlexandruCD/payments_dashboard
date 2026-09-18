@@ -22,10 +22,6 @@ h1 New Merchant
       = f.label :status, class: "form-label"
       = f.select :status, Merchant::STATUSES, {}, class: "form-select"
 
-    .mb-3
-      = f.label :password, "API password", class: "form-label"
-      = f.password_field :password, class: "form-control"
-
   fieldset.mb-3
     legend UI login
 

@@ -3,9 +3,6 @@
 class Merchant < ApplicationRecord
   include Auditable
 
-  # Own credentials, used for JWT auth (separate from User, which is UI-only)
-  has_secure_password
-
   belongs_to :user
 
   has_many :transactions, dependent: :restrict_with_error
@@ -17,7 +14,6 @@ class Merchant < ApplicationRecord
                        uniqueness: { case_sensitive: false },
                        format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :status,   presence: true, inclusion: { in: STATUSES }
-  validates :password, length: { minimum: 8 }, allow_nil: true
 
   scope :active,   -> { where(status: "active") }
   scope :inactive, -> { where(status: "inactive") }

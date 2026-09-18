@@ -6,7 +6,6 @@ FactoryBot.define do
     description { Faker::Company.catch_phrase }
     email       { Faker::Internet.unique.email }
     status      { 'active' }
-    password    { 'password123' }
     association :user
   end
 end

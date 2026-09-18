@@ -15,7 +15,6 @@ RSpec.feature "Admin manages merchants", type: :feature do
     fill_in "Description", with: "Retailer"
     fill_in "Email", with: "acme@example.com"
     select "active", from: "Status"
-    fill_in "API password", with: "password123"
     fill_in "Login email", with: "acme-login@example.com"
     fill_in "Login password", with: "password123"
     click_button "Create Merchant"

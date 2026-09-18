@@ -42,7 +42,7 @@ bin/rails server
 
 ## Trying it out
 
-Seeded accounts (password is `password123` for all of them):
+Seeded UI accounts use the password `password123`:
 
 - Admin: `admin@payments-dashboard.test`
 - Merchants (UI logins): `acme@payments-dashboard.test`,
@@ -119,14 +119,12 @@ API presenters share initialization through `ApplicationPresenter`; UI
 formatting stays separate from the API payload.
 
 **Merchant and User are two different things on purpose.** `User` (Devise)
-is who can sign in to the web UI. `Merchant` is the business identity that
-owns transactions and is identified by the JWT's `merchant_id`. Admins
-issue API tokens from the merchant page through
-`Merchants::IssueApiTokenService`; UI passwords are not submitted to the API.
-The token is rendered only in the generation response, with HTTP and Turbo
-caching disabled. Merchant password fields still exist temporarily in the
-registration flow and schema; removing those obsolete fields is a separate
-cleanup.
+is who can sign in to the web UI and owns the login password. `Merchant` is
+the business identity that owns transactions and is identified by the JWT's
+`merchant_id`; it has no password of its own. Admins issue API tokens from
+the merchant page through `Merchants::IssueApiTokenService`. The token is
+rendered only in the generation response, with HTTP and Turbo caching
+disabled.
 
 **Background jobs are real, but the queue backend differs by environment.**
 `TransactionProcessingJob` delegates settlement to

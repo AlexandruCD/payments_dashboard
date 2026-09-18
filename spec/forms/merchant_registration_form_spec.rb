@@ -6,7 +6,7 @@ RSpec.describe MerchantRegistrationForm do
   let(:valid_attributes) do
     {
       name: "Acme Corp", description: "Retailer", email: "acme@example.com", status: "active",
-      password: "password123", user_email: "acme-login@example.com", user_password: "password123"
+      user_email: "acme-login@example.com", user_password: "password123"
     }
   end
 
