@@ -15,6 +15,11 @@ dl.row
   dd.col-sm-10
     span.badge class=(@merchant.active? ? "bg-success" : "bg-secondary") = @merchant.status
 
+h2.mt-4 API access
+p Generate a token valid for 24 hours to submit transactions for this merchant.
+= button_to "Generate API token", admin_merchant_token_path(@merchant), method: :post,
+  class: "btn btn-primary", form: { data: { turbo: false } }
+
 h2.mt-4 Transactions
 
 - if @transactions.empty?

@@ -5,13 +5,14 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      post "tokens", to: "tokens#create"
       post "transactions", to: "transactions#create"
     end
   end
 
   namespace :admin do
-    resources :merchants
+    resources :merchants do
+      resource :token, only: :create, controller: "merchant_tokens"
+    end
   end
 
   resources :transactions, only: %i[index show]

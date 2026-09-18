@@ -26,6 +26,18 @@ RSpec.feature "Admin manages merchants", type: :feature do
     expect(User.find_by(email: "acme-login@example.com")).to be_present
   end
 
+  scenario "generating a merchant API token" do
+    merchant = create(:merchant)
+    visit admin_merchant_path(merchant)
+    click_button "Generate API token"
+
+    token = find_field("API token").value
+    expect(JsonWebToken.decode(token)[:merchant_id]).to eq(merchant.id)
+    expect(page).to have_content("Expires at:")
+    click_link "Back to merchant"
+    expect(page).not_to have_field("API token")
+  end
+
   scenario "editing a merchant" do
     merchant = create(:merchant, name: "Old Name")
     visit admin_merchants_path

@@ -1,0 +1,14 @@
+- content_for :head do
+  meta name="turbo-cache-control" content="no-cache"
+
+h1 = "API token for #{@merchant.name}"
+p Copy this token now. It will not be displayed again after you leave this page.
+
+.mb-3
+  = label_tag :api_token, "API token", class: "form-label"
+  = text_area_tag :api_token, @issued_token[:token], readonly: true, rows: 5, class: "form-control", autocomplete: "off"
+p
+  = "Expires at: "
+  = @issued_token[:expires_at].strftime("%Y-%m-%d %H:%M:%S %Z")
+
+= link_to "Back to merchant", admin_merchant_path(@merchant), class: "btn btn-secondary"

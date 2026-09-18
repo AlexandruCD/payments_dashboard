@@ -45,7 +45,7 @@ bin/rails server
 Seeded accounts (password is `password123` for all of them):
 
 - Admin: `admin@payments-dashboard.test`
-- Merchants (UI login *and* API credentials — see below): `acme@payments-dashboard.test`,
+- Merchants (UI logins): `acme@payments-dashboard.test`,
   `globex@payments-dashboard.test` (both active), `initech@payments-dashboard.test` (inactive)
 
 Sign in at `/users/sign_in`. Admins land on `/admin/merchants` (create, edit,
@@ -54,14 +54,19 @@ unless they're an admin.
 
 ### The API
 
-A merchant authenticates with its own credentials (not the UI login) to get
-a token, then submits transactions with it:
+Sign in as an admin, open **Merchants**, select a merchant, and click
+**Generate API token**. Copy the token from the result page; its expiry is
+shown there. Tokens expire after 24 hours and are not saved for later
+retrieval. Generating a token does not revoke previously issued tokens.
+
+Token generation is admin-only and uses a CSRF-protected POST. The former
+`POST /api/v1/tokens` password endpoint has been removed. An admin can issue
+a token for an inactive merchant, but its transaction requests receive 403
+until the merchant is active.
+
+Use the generated token to submit transactions:
 
 ```
-curl -X POST localhost:3000/api/v1/tokens \
-  -d "email=acme@payments-dashboard.test" -d "password=password123"
-# => {"token":"eyJ..."}
-
 curl -X POST localhost:3000/api/v1/transactions \
   -H "Authorization: Bearer eyJ..." \
   -d "type=authorize" -d "amount=100" \
@@ -114,11 +119,14 @@ API presenters share initialization through `ApplicationPresenter`; UI
 formatting stays separate from the API payload.
 
 **Merchant and User are two different things on purpose.** `User` (Devise)
-is who's allowed into the web UI and what they can see there. `Merchant` has
-its own separate password and is what the JWT API authenticates against.
-Conflating them would mean a merchant's UI password and API credentials are
-the same secret, which isn't how you'd want a real payments integration to
-work.
+is who can sign in to the web UI. `Merchant` is the business identity that
+owns transactions and is identified by the JWT's `merchant_id`. Admins
+issue API tokens from the merchant page through
+`Merchants::IssueApiTokenService`; UI passwords are not submitted to the API.
+The token is rendered only in the generation response, with HTTP and Turbo
+caching disabled. Merchant password fields still exist temporarily in the
+registration flow and schema; removing those obsolete fields is a separate
+cleanup.
 
 **Background jobs are real, but the queue backend differs by environment.**
 `TransactionProcessingJob` delegates settlement to
