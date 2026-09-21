@@ -12,8 +12,14 @@ RSpec.describe TransactionPresenter do
   end
 
   describe "#type_label" do
-    it "strips the Transaction suffix" do
+    it "translates the STI type for display" do
       expect(presenter.type_label).to eq("Authorize")
+    end
+  end
+
+  describe "#status_label" do
+    it "translates the stored status for display" do
+      expect(presenter.status_label).to eq("Approved")
     end
   end
 

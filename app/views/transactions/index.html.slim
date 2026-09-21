@@ -1,19 +1,19 @@
-h1 Transactions
+h1 = t(".title")
 
 - if @transactions.empty?
-  p.text-muted No transactions yet.
+  p.text-muted = t(".empty")
 - else
   table.table.table-striped.align-middle
     thead
       tr
-        th UUID
-        th Type
-        th Status
-        th Amount
+        th = t(".uuid")
+        th = t(".type")
+        th = t(".status")
+        th = t(".amount")
         - if current_user.admin?
-          th Merchant
-        th Customer
-        th Created
+          th = t(".merchant")
+        th = t(".customer")
+        th = t(".created")
         th
 
     tbody
@@ -23,10 +23,10 @@ h1 Transactions
             code = transaction.uuid[0, 8]
           td = transaction.type_label
           td
-            span.badge class=transaction.status_badge_class = transaction.status
+            span.badge class=transaction.status_badge_class = transaction.status_label
           td = transaction.formatted_amount
           - if current_user.admin?
             td = transaction.merchant.name
           td = transaction.customer_email
-          td = transaction.created_at.strftime("%Y-%m-%d %H:%M")
-          td = link_to "View", transaction_path(transaction.id)
+          td = l(transaction.created_at, format: :dashboard)
+          td = link_to t(".view"), transaction_path(transaction.id)

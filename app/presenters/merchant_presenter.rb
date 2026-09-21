@@ -9,6 +9,10 @@ class MerchantPresenter < ApplicationPresenter
     merchant.active? ? "bg-success" : "bg-secondary"
   end
 
+  def status_label
+    I18n.t(status, scope: :merchant_statuses)
+  end
+
   def transaction_count
     transactions.count
   end

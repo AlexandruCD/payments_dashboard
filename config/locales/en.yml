@@ -1,31 +1,153 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  application:
+    name: "Payments Dashboard"
+  admin:
+    authorization:
+      denied: "You are not authorized to view this page."
+    merchant_tokens:
+      create:
+        title: "API token for %{name}"
+        instructions: "Copy this token now. It will not be displayed again after you leave this page."
+        token_label: "API token"
+        expires_at: "Expires at: %{time}"
+        back: "Back to merchant"
+    merchant_users:
+      flashes:
+        created: "Merchant UI login created."
+    merchants:
+      flashes:
+        created: "Merchant created. Add a UI login when needed."
+        updated: "Merchant updated."
+        deleted: "Merchant deleted."
+      edit:
+        title: "Edit %{name}"
+        submit: "Update Merchant"
+        cancel: "Cancel"
+      index:
+        title: "Merchants"
+        new: "New Merchant"
+        empty: "No merchants yet."
+        name: "Name"
+        email: "Email"
+        status: "Status"
+        transactions: "Transactions"
+        edit: "Edit"
+        delete: "Delete"
+        confirm_delete: "Are you sure?"
+      new:
+        title: "New Merchant"
+        submit: "Create Merchant"
+        cancel: "Cancel"
+      show:
+        edit: "Edit"
+        back: "Back"
+        email: "Email"
+        description: "Description"
+        status: "Status"
+        ui_login: "UI login"
+        login_configured_html: "Configured for <strong>%{email}</strong>"
+        login_instructions: "Create a login when someone needs access to this merchant's transaction dashboard."
+        create_login: "Create UI login"
+        api_access: "API access"
+        api_instructions: "Generate a token valid for 24 hours to submit transactions for this merchant."
+        generate_token: "Generate API token"
+        transactions: "Transactions"
+        no_transactions: "No transactions yet."
+        uuid: "UUID"
+        type: "Type"
+        amount: "Amount"
+        created: "Created"
+  activemodel:
+    attributes:
+      merchant_form:
+        name: "Name"
+        description: "Description"
+        email: "Email"
+        status: "Status"
+      merchant_user_form:
+        email: "Login email"
+        password: "Login password"
+    errors:
+      models:
+        merchant_user_form:
+          attributes:
+            merchant:
+              already_has_ui_login: "already has a UI login"
+              must_exist: "must exist"
+  activerecord:
+    attributes:
+      merchant:
+        name: "Name"
+        description: "Description"
+        email: "Email"
+        status: "Status"
+      user:
+        email: "Email"
+        password: "Password"
+        remember_me: "Remember me"
+    models:
+      admin_user: "Admin user"
+      merchant_user: "Merchant user"
+  devise:
+    sessions:
+      new:
+        title: "Sign In"
+        submit: "Sign in"
+  layouts:
+    navbar:
+      transactions: "Transactions"
+      merchants: "Merchants"
+      signed_in_as: "%{email} (%{role})"
+      sign_out: "Sign out"
+      sign_in: "Sign in"
+  merchant_statuses:
+    active: "Active"
+    inactive: "Inactive"
+  pwa:
+    description: "Payments Dashboard."
+  shared:
+    error_messages:
+      heading:
+        one: "1 error prohibited this from being saved:"
+        other: "%{count} errors prohibited this from being saved:"
+  time:
+    formats:
+      dashboard: "%Y-%m-%d %H:%M"
+      token_expiry: "%Y-%m-%d %H:%M:%S %Z"
+  transaction_statuses:
+    pending: "Pending"
+    approved: "Approved"
+    captured: "Captured"
+    refunded: "Refunded"
+    voided: "Voided"
+    error: "Error"
+  transaction_types:
+    authorize_transaction: "Authorize"
+    capture_transaction: "Capture"
+    refund_transaction: "Refund"
+    void_transaction: "Void"
+  transactions:
+    index:
+      title: "Transactions"
+      empty: "No transactions yet."
+      uuid: "UUID"
+      type: "Type"
+      status: "Status"
+      amount: "Amount"
+      merchant: "Merchant"
+      customer: "Customer"
+      created: "Created"
+      view: "View"
+    show:
+      title: "%{type} Transaction"
+      uuid: "UUID"
+      status: "Status"
+      amount: "Amount"
+      merchant: "Merchant"
+      customer_email: "Customer email"
+      customer_phone: "Customer phone"
+      references: "References"
+      created: "Created"
+      back: "Back"
+    values:
+      not_available: "—"

@@ -1,60 +1,58 @@
 .d-flex.justify-content-between.align-items-center.mb-3
   h1 = @merchant.name
   .d-flex.gap-2
-    = link_to "Edit", edit_admin_merchant_path(@merchant), class: "btn btn-outline-secondary"
-    = link_to "Back", admin_merchants_path, class: "btn btn-secondary"
+    = link_to t(".edit"), edit_admin_merchant_path(@merchant), class: "btn btn-outline-secondary"
+    = link_to t(".back"), admin_merchants_path, class: "btn btn-secondary"
 
 dl.row
-  dt.col-sm-2 Email
+  dt.col-sm-2 = t(".email")
   dd.col-sm-10 = @merchant.email
 
-  dt.col-sm-2 Description
+  dt.col-sm-2 = t(".description")
   dd.col-sm-10 = @merchant.description
 
-  dt.col-sm-2 Status
+  dt.col-sm-2 = t(".status")
   dd.col-sm-10
-    span.badge class=(@merchant.active? ? "bg-success" : "bg-secondary") = @merchant.status
+    span.badge class=(@merchant.active? ? "bg-success" : "bg-secondary") = t(@merchant.status, scope: :merchant_statuses)
 
-h2.mt-4 UI login
+h2.mt-4 = t(".ui_login")
 - if @merchant_user_form
   = render "shared/error_messages", object: @merchant_user_form
 
 - if @merchant.merchant_user&.persisted?
-  p
-    | Configured for
-    strong< = @merchant.merchant_user.email
+  p = t(".login_configured_html", email: @merchant.merchant_user.email)
 - else
-  p Create a login when someone needs access to this merchant's transaction dashboard.
+  p = t(".login_instructions")
   = form_with model: @merchant_user_form,
     url: admin_merchant_merchant_user_path(@merchant), local: true do |f|
     .mb-3
-      = f.label :email, "Login email", class: "form-label"
+      = f.label :email, class: "form-label"
       = f.email_field :email, class: "form-control"
 
     .mb-3
-      = f.label :password, "Login password", class: "form-label"
+      = f.label :password, class: "form-label"
       = f.password_field :password, class: "form-control"
 
-    = f.submit "Create UI login", class: "btn btn-primary"
+    = f.submit t(".create_login"), class: "btn btn-primary"
 
-h2.mt-4 API access
-p Generate a token valid for 24 hours to submit transactions for this merchant.
-= button_to "Generate API token", admin_merchant_token_path(@merchant), method: :post,
+h2.mt-4 = t(".api_access")
+p = t(".api_instructions")
+= button_to t(".generate_token"), admin_merchant_token_path(@merchant), method: :post,
   class: "btn btn-primary", form: { data: { turbo: false } }
 
-h2.mt-4 Transactions
+h2.mt-4 = t(".transactions")
 
 - if @transactions.empty?
-  p.text-muted No transactions yet.
+  p.text-muted = t(".no_transactions")
 - else
   table.table.table-striped.align-middle
     thead
       tr
-        th UUID
-        th Type
-        th Status
-        th Amount
-        th Created
+        th = t(".uuid")
+        th = t(".type")
+        th = t(".status")
+        th = t(".amount")
+        th = t(".created")
 
     tbody
       - @transactions.each do |transaction|
@@ -63,6 +61,6 @@ h2.mt-4 Transactions
             code = transaction.uuid[0, 8]
           td = transaction.type_label
           td
-            span.badge class=transaction.status_badge_class = transaction.status
+            span.badge class=transaction.status_badge_class = transaction.status_label
           td = transaction.formatted_amount
-          td = transaction.created_at.strftime("%Y-%m-%d %H:%M")
+          td = l(transaction.created_at, format: :dashboard)

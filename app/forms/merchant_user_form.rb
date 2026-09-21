@@ -26,7 +26,7 @@ class MerchantUserForm
     merchant_user.errors.full_messages.each { |message| errors.add(:base, message) }
     false
   rescue ActiveRecord::RecordNotUnique
-    errors.add(:merchant, "already has a UI login")
+    errors.add(:merchant, :already_has_ui_login)
     false
   end
 
@@ -34,9 +34,9 @@ class MerchantUserForm
 
   def merchant_is_available
     if !merchant&.persisted?
-      errors.add(:merchant, "must exist")
+      errors.add(:merchant, :must_exist)
     elsif merchant.merchant_user.present?
-      errors.add(:merchant, "already has a UI login")
+      errors.add(:merchant, :already_has_ui_login)
     end
   end
 end

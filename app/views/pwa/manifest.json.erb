@@ -1,5 +1,5 @@
 {
-  "name": "PaymentsDashboard",
+  "name": <%= I18n.t("application.name").to_json %>,
   "icons": [
     {
       "src": "/icon.png",
@@ -16,7 +16,7 @@
   "start_url": "/",
   "display": "standalone",
   "scope": "/",
-  "description": "PaymentsDashboard.",
+  "description": <%= I18n.t("pwa.description").to_json %>,
   "theme_color": "red",
   "background_color": "red"
 }

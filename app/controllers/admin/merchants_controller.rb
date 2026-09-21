@@ -20,7 +20,7 @@ module Admin
       @form = MerchantForm.new(merchant_form_params)
 
       if @form.save
-        redirect_to admin_merchant_path(@form.merchant), notice: "Merchant created. Add a UI login when needed."
+        redirect_to admin_merchant_path(@form.merchant), notice: I18n.t("admin.merchants.flashes.created")
       else
         render :new, status: :unprocessable_content
       end
@@ -32,7 +32,7 @@ module Admin
       result = Merchants::UpdateService.call(merchant: @merchant, params: merchant_params)
 
       if result.success?
-        redirect_to admin_merchant_path(@merchant), notice: "Merchant updated."
+        redirect_to admin_merchant_path(@merchant), notice: I18n.t("admin.merchants.flashes.updated")
       else
         render :edit, status: :unprocessable_content
       end
@@ -40,7 +40,7 @@ module Admin
 
     def destroy
       if @merchant.destroy
-        redirect_to admin_merchants_path, notice: "Merchant deleted."
+        redirect_to admin_merchants_path, notice: I18n.t("admin.merchants.flashes.deleted")
       else
         redirect_to admin_merchant_path(@merchant), alert: @merchant.errors.full_messages.to_sentence
       end

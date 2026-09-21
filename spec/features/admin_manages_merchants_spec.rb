@@ -14,7 +14,7 @@ RSpec.feature "Admin manages merchants", type: :feature do
     fill_in "Name", with: "Acme Corp"
     fill_in "Description", with: "Retailer"
     fill_in "Email", with: "acme@example.com"
-    select "active", from: "Status"
+    select "Active", from: "Status"
     click_button "Create Merchant"
 
     expect(page).to have_content("Merchant created. Add a UI login when needed.")

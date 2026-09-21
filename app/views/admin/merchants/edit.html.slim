@@ -1,4 +1,4 @@
-h1 = "Edit #{@merchant.name}"
+h1 = t(".title", name: @merchant.name)
 
 = render "shared/error_messages", object: @merchant
 
@@ -17,7 +17,7 @@ h1 = "Edit #{@merchant.name}"
 
   .mb-3
     = f.label :status, class: "form-label"
-    = f.select :status, Merchant::STATUSES, {}, class: "form-select"
+    = f.select :status, Merchant::STATUSES.map { |status| [t(status, scope: :merchant_statuses), status] }, {}, class: "form-select"
 
-  = f.submit "Update Merchant", class: "btn btn-primary me-2"
-  = link_to "Cancel", admin_merchant_path(@merchant), class: "btn btn-secondary"
+  = f.submit t(".submit"), class: "btn btn-primary me-2"
+  = link_to t(".cancel"), admin_merchant_path(@merchant), class: "btn btn-secondary"

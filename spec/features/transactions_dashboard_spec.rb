@@ -37,6 +37,6 @@ RSpec.feature "Transactions dashboard", type: :feature do
     click_link "View"
 
     expect(page).to have_content(transaction.uuid)
-    expect(page).to have_content(transaction.status)
+    expect(page).to have_content(I18n.t(transaction.status, scope: :transaction_statuses))
   end
 end

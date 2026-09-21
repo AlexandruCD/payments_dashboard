@@ -18,11 +18,15 @@ class TransactionPresenter < ApplicationPresenter
            to: :transaction
 
   def type_label
-    transaction.type.sub("Transaction", "")
+    I18n.t(transaction.model_name.i18n_key, scope: :transaction_types)
+  end
+
+  def status_label
+    I18n.t(status, scope: :transaction_statuses)
   end
 
   def formatted_amount
-    transaction.amount.nil? ? "—" : number_to_currency(transaction.amount)
+    transaction.amount.nil? ? I18n.t("transactions.values.not_available") : number_to_currency(transaction.amount)
   end
 
   def status_badge_class

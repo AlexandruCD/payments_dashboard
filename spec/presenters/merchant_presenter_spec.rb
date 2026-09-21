@@ -22,6 +22,12 @@ RSpec.describe MerchantPresenter do
     end
   end
 
+  describe "#status_label" do
+    it "translates the stored status for display" do
+      expect(presenter.status_label).to eq("Active")
+    end
+  end
+
   describe "#transaction_count" do
     it "counts the merchant's transactions" do
       create(:authorize_transaction, merchant: merchant)
