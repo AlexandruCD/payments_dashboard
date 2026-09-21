@@ -30,6 +30,8 @@ class TransactionPresenter < ApplicationPresenter
   end
 
   def referenced_uuid
+    return unless transaction.respond_to?(:referenced_transaction)
+
     transaction.referenced_transaction&.uuid
   end
 

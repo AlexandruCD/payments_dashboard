@@ -33,7 +33,7 @@ RSpec.describe Transactions::CreateCaptureService do
 
   it "rolls back the capture and propagates unexpected parent update errors" do
     allow(AuthorizeTransaction).to receive(:find_by).and_return(authorize_transaction)
-    allow(authorize_transaction).to receive(:update!).and_raise(ActiveRecord::StatementInvalid, "update failed")
+    allow(authorize_transaction).to receive(:capture!).and_raise(ActiveRecord::StatementInvalid, "update failed")
 
     expect do
       expect { call(amount: 40, referenced_transaction_uuid: authorize_transaction.uuid) }
@@ -71,11 +71,13 @@ RSpec.describe Transactions::CreateCaptureService do
 
       it "allows multiple partial captures within the authorized amount" do
         call(amount: 40, referenced_transaction_uuid: authorize_transaction.uuid)
+        audit_count = authorize_transaction.audit_logs.count
         result = call(amount: 60, referenced_transaction_uuid: authorize_transaction.uuid)
         second = result.entity
 
         expect(second.status).to eq("approved")
         expect(authorize_transaction.total_captured).to eq(100)
+        expect(authorize_transaction.audit_logs.count).to eq(audit_count)
       end
 
       it "inherits customer_email from the referenced authorize when not supplied" do

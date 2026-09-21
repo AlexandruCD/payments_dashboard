@@ -55,11 +55,13 @@ RSpec.describe Transactions::CreateRefundService do
 
       it "allows multiple partial refunds within the captured amount" do
         call(amount: 40, referenced_transaction_uuid: capture_transaction.uuid)
+        audit_count = capture_transaction.audit_logs.count
         result = call(amount: 60, referenced_transaction_uuid: capture_transaction.uuid)
         second = result.entity
 
         expect(second.status).to eq("approved")
         expect(capture_transaction.total_refunded).to eq(100)
+        expect(capture_transaction.audit_logs.count).to eq(audit_count)
       end
 
       it "ignores a client-supplied status" do

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class Merchant < ApplicationRecord
+  include AASM
   include Auditable
 
   has_many :transactions, dependent: :restrict_with_error
@@ -12,16 +13,16 @@ class Merchant < ApplicationRecord
   validates :email,    presence: true,
                        uniqueness: { case_sensitive: false },
                        format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :status,   presence: true, inclusion: { in: STATUSES }
+  aasm column: :status do
+    state :active, initial: true
+    state :inactive
 
-  scope :active,   -> { where(status: "active") }
-  scope :inactive, -> { where(status: "inactive") }
+    event :activate do
+      transitions from: :inactive, to: :active
+    end
 
-  def active?
-    status == "active"
-  end
-
-  def inactive?
-    status == "inactive"
+    event :deactivate do
+      transitions from: :active, to: :inactive
+    end
   end
 end

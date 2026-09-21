@@ -51,6 +51,13 @@ RSpec.describe "Admin::Merchants", type: :request do
       patch admin_merchant_path(merchant), params: { merchant: { name: "New Name" } }
       expect(merchant.reload.name).to eq("New Name")
     end
+
+    it "changes status through the merchant state machine" do
+      merchant = create(:merchant)
+
+      expect { patch admin_merchant_path(merchant), params: { merchant: { status: "inactive" } } }
+        .to change { merchant.reload.status }.from("active").to("inactive")
+    end
   end
 
   describe "DELETE /admin/merchants/:id" do

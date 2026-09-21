@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class RefundTransaction < Transaction
+  include AASM
   include ReferenceableTransaction
 
   belongs_to :capture_transaction,
@@ -11,4 +12,13 @@ class RefundTransaction < Transaction
 
   validates_referenced_status in: %w[approved refunded]
   validates_amount_within_remaining
+
+  aasm column: :status do
+    state :approved, initial: true
+    state :error
+
+    event :mark_failed do
+      transitions from: :approved, to: :error
+    end
+  end
 end

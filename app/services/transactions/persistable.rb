@@ -13,7 +13,7 @@ module Transactions
         ServiceResult.success(entity: transaction)
       else
         result = validation_failure(transaction)
-        transaction.status = "error"
+        transaction.mark_failed
         transaction.save!(validate: false)
         result
       end

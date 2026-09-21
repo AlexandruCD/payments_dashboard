@@ -13,8 +13,6 @@ RSpec.describe Merchant, type: :model do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_presence_of(:email) }
-    it { is_expected.to validate_presence_of(:status) }
-    it { is_expected.to validate_inclusion_of(:status).in_array(Merchant::STATUSES) }
     it { is_expected.to validate_uniqueness_of(:email).case_insensitive }
 
     it 'is invalid with a malformed email' do
@@ -66,10 +64,30 @@ RSpec.describe Merchant, type: :model do
     end
   end
 
+  describe 'state machine' do
+    it 'starts active' do
+      expect(build(:merchant, status: nil)).to be_active
+    end
+
+    it 'deactivates and reactivates a merchant' do
+      merchant = create(:merchant)
+
+      expect { merchant.deactivate! }.to change(merchant, :status).from('active').to('inactive')
+      expect { merchant.activate! }.to change(merchant, :status).from('inactive').to('active')
+    end
+
+    it 'rejects an unsupported status' do
+      merchant.status = 'suspended'
+
+      expect(merchant).not_to be_valid
+      expect(merchant.errors[:status]).to include('is invalid')
+    end
+  end
+
   describe 'audit logging' do
     it 'logs a status change' do
       merchant = create(:merchant, status: 'active')
-      expect { merchant.update!(status: 'inactive') }.to change(merchant.audit_logs, :count).by(1)
+      expect { merchant.deactivate! }.to change(merchant.audit_logs, :count).by(1)
       expect(merchant.audit_logs.last.details).to eq('active -> inactive')
     end
 

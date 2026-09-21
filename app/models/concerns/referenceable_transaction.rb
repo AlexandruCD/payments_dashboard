@@ -3,6 +3,10 @@
 module ReferenceableTransaction
   extend ActiveSupport::Concern
 
+  included do
+    belongs_to :referenced_transaction, class_name: "Transaction", optional: true
+  end
+
   class_methods do
     # on: :create only, so later status changes (e.g. capture -> refunded) don't re-trigger these
     def validates_referenced_status(in:)

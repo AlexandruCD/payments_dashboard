@@ -40,6 +40,47 @@ RSpec.describe AuthorizeTransaction, type: :model do
     end
   end
 
+  describe 'state machine' do
+    it 'starts pending' do
+      expect(transaction).to be_pending
+    end
+
+    it 'processes pending authorizations to approved or error' do
+      expect(transaction).to be_may_approve
+      expect(transaction).to be_may_mark_failed
+    end
+
+    it 'captures an approved authorization and permits later partial captures' do
+      transaction.status = 'approved'
+
+      expect { transaction.capture }.to change(transaction, :status).from('approved').to('captured')
+      expect(transaction).to be_may_capture
+      expect { transaction.capture }.not_to change(transaction, :status)
+    end
+
+    it 'voids only an approved authorization' do
+      transaction.status = 'approved'
+
+      expect { transaction.void }.to change(transaction, :status).from('approved').to('voided')
+      expect(transaction).not_to be_may_capture
+      expect(transaction).not_to be_may_void
+    end
+
+    it 'rejects statuses outside the authorization lifecycle' do
+      transaction.status = 'refunded'
+
+      expect(transaction).not_to be_valid
+      expect(transaction.errors[:status]).to include('is invalid')
+    end
+
+    it 'provides a pending scope for the stale authorization sweep' do
+      pending = create(:authorize_transaction)
+      create(:authorize_transaction, status: 'approved')
+
+      expect(described_class.pending).to contain_exactly(pending)
+    end
+  end
+
   describe '#total_captured' do
     let(:authorize) { create(:authorize_transaction, amount: 100, status: 'approved') }
 

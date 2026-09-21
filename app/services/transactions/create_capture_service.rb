@@ -15,12 +15,11 @@ module Transactions
           amount: params[:amount],
           customer_email: params[:customer_email] || referenced_authorize&.customer_email,
           customer_phone: params[:customer_phone] || referenced_authorize&.customer_phone,
-          referenced_transaction: referenced_authorize,
-          status: "approved"
+          referenced_transaction: referenced_authorize
         )
 
         result = persist_or_error(transaction)
-        referenced_authorize.update!(status: "captured") if result.success? && referenced_authorize
+        referenced_authorize.capture! if result.success? && referenced_authorize
 
         result
       end

@@ -40,6 +40,30 @@ RSpec.describe CaptureTransaction, type: :model do
     end
   end
 
+  describe 'state machine' do
+    it 'starts approved' do
+      expect(transaction).to be_approved
+    end
+
+    it 'transitions to refunded and accepts subsequent partial refunds' do
+      expect { transaction.refund }.to change(transaction, :status).from('approved').to('refunded')
+      expect(transaction).to be_may_refund
+      expect { transaction.refund }.not_to change(transaction, :status)
+    end
+
+    it 'can mark a new invalid submission as error' do
+      expect { transaction.mark_failed }.to change(transaction, :status).from('approved').to('error')
+      expect(transaction).not_to be_may_refund
+    end
+
+    it 'rejects statuses from other transaction lifecycles' do
+      transaction.status = 'pending'
+
+      expect(transaction).not_to be_valid
+      expect(transaction.errors[:status]).to include('is invalid')
+    end
+  end
+
   describe 'amount validation against authorized amount' do
     it 'is invalid when amount exceeds remaining authorized amount' do
       transaction.amount = 101

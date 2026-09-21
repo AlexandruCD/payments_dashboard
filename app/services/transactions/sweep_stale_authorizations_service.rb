@@ -7,7 +7,7 @@ module Transactions
 
     def call
       AuthorizeTransaction.pending.where(created_at: ..STALE_AFTER.ago).find_each do |authorize_transaction|
-        authorize_transaction.update!(status: "error")
+        authorize_transaction.mark_failed!
         NotificationJob.perform_later(authorize_transaction)
       end
 

@@ -93,12 +93,21 @@ A few decisions worth explaining rather than leaving implicit:
 
 **Transactions are one table, four classes.** `Transaction` is a normal STI
 setup — `AuthorizeTransaction`, `CaptureTransaction`, `RefundTransaction`,
-`VoidTransaction` — because they share almost everything (status, amount,
-the merchant they belong to, the transaction they reference) and differ only
-in validation rules and what happens on success. The shared "does this
-reference a transaction in the right state, and is the amount within what's
-left" logic lives in one concern (`ReferenceableTransaction`) instead of
-being copy-pasted three times.
+`VoidTransaction` — because they share identity, customer data, amount storage,
+and the merchant they belong to. Follow-up associations and lifecycle rules
+live on the relevant subclasses. The shared "does this reference a transaction
+in the right state, and is the amount within what's left" logic lives in one
+concern (`ReferenceableTransaction`) instead of being copy-pasted three times.
+
+**Lifecycle changes go through AASM events.** Each STI subclass declares only
+its valid states and transitions. Authorizations move from pending to approved
+or error, then an approved authorization can be captured or voided. Captures
+move from approved to refunded; refund and void records are created as approved
+or error. Repeated same-state capture/refund events preserve the assignment's
+support for multiple partial captures and refunds, while voids remain
+amount-free. Merchant activation and deactivation use the same event-based
+approach. AASM also supplies the subtype scopes and predicate methods used by
+services and views.
 
 **Business logic lives in services, not models or controllers.** Creating a
 transaction has real rules (an invalid capture/refund/void still gets
@@ -135,8 +144,9 @@ generation response, with HTTP and Turbo caching disabled.
 **Background jobs are real, but the queue backend differs by environment.**
 `TransactionProcessingJob` delegates settlement to
 `Transactions::ProcessAuthorizationService`, which updates a pending
-authorization and enqueues `NotificationJob`. That job delegates the webhook
-form POST to `Notifications::SendTransactionNotificationService`; retry
+authorization through its state event and enqueues `NotificationJob`. That job
+delegates the webhook form POST to
+`Notifications::SendTransactionNotificationService`; retry
 configuration stays in the job, and network exceptions propagate from the
 service. These services return `ServiceResult`: processing returns the
 transaction, and notification sending returns the HTTP response. Notification

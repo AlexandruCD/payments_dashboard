@@ -15,12 +15,11 @@ module Transactions
           amount: params[:amount],
           customer_email: params[:customer_email] || referenced_capture&.customer_email,
           customer_phone: params[:customer_phone] || referenced_capture&.customer_phone,
-          referenced_transaction: referenced_capture,
-          status: "approved"
+          referenced_transaction: referenced_capture
         )
 
         result = persist_or_error(transaction)
-        referenced_capture.update!(status: "refunded") if result.success? && referenced_capture
+        referenced_capture.refund! if result.success? && referenced_capture
 
         result
       end

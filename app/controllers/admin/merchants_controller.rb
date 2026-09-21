@@ -29,7 +29,9 @@ module Admin
     def edit; end
 
     def update
-      if @merchant.update(merchant_params)
+      result = Merchants::UpdateService.call(merchant: @merchant, params: merchant_params)
+
+      if result.success?
         redirect_to admin_merchant_path(@merchant), notice: "Merchant updated."
       else
         render :edit, status: :unprocessable_content

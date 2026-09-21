@@ -41,4 +41,18 @@ RSpec.describe VoidTransaction, type: :model do
       expect(transaction).to be_valid
     end
   end
+
+  describe 'state machine' do
+    it 'starts approved and can be marked as a failed submission' do
+      expect(transaction).to be_approved
+      expect { transaction.mark_failed }.to change(transaction, :status).from('approved').to('error')
+    end
+
+    it 'rejects statuses from other transaction lifecycles' do
+      transaction.status = 'voided'
+
+      expect(transaction).not_to be_valid
+      expect(transaction.errors[:status]).to include('is invalid')
+    end
+  end
 end

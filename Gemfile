@@ -19,6 +19,9 @@ gem "jbuilder"
 
 gem "devise"
 
+# State transitions for merchants and payment transaction types
+gem "aasm", "~> 6.0"
+
 # JWT auth for the payments API
 gem "jwt"
 
