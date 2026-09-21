@@ -44,13 +44,13 @@ bin/rails server
 
 Seeded UI accounts use the password `password123`:
 
-- Admin: `admin@payments-dashboard.test`
+- Admins: `admin@payments-dashboard.test`, `ops@payments-dashboard.test`
 - Merchants (UI logins): `acme@payments-dashboard.test`,
   `globex@payments-dashboard.test` (both active), `initech@payments-dashboard.test` (inactive)
 
-Sign in at `/users/sign_in`. Admins land on `/admin/merchants` (create, edit,
-delete) and everyone lands on `/transactions`, scoped to their own merchant
-unless they're an admin.
+Sign in at `/users/sign_in`. The transaction dashboard is at `/transactions`;
+merchant users see their own merchant's records, while admins see all of them.
+Admins manage merchants, UI logins, and API tokens from `/admin/merchants`.
 
 ### The API
 
@@ -59,10 +59,9 @@ Sign in as an admin, open **Merchants**, select a merchant, and click
 shown there. Tokens expire after 24 hours and are not saved for later
 retrieval. Generating a token does not revoke previously issued tokens.
 
-Token generation is admin-only and uses a CSRF-protected POST. The former
-`POST /api/v1/tokens` password endpoint has been removed. An admin can issue
-a token for an inactive merchant, but its transaction requests receive 403
-until the merchant is active.
+Token generation is admin-only and uses a CSRF-protected POST. An admin can
+issue a token for an inactive merchant, but its transaction requests receive
+403 until the merchant is active.
 
 Use the generated token to submit transactions:
 
@@ -82,7 +81,7 @@ you ask for JSON explicitly.
 ## Tests
 
 ```
-bundle exec rspec        # models, services, jobs, requests, and Capybara feature specs
+bundle exec rspec        # models, forms, services, presenters, jobs, controllers, requests, and features
 bundle exec rubocop
 bin/brakeman
 ```
@@ -93,30 +92,30 @@ A few decisions worth explaining rather than leaving implicit:
 
 **Transactions are one table, four classes.** `Transaction` is a normal STI
 setup — `AuthorizeTransaction`, `CaptureTransaction`, `RefundTransaction`,
-`VoidTransaction` — because they share identity, customer data, amount storage,
-and the merchant they belong to. Follow-up associations and lifecycle rules
-live on the relevant subclasses. The shared "does this reference a transaction
-in the right state, and is the amount within what's left" logic lives in one
-concern (`ReferenceableTransaction`) instead of being copy-pasted three times.
+`VoidTransaction` — because they share identity, customer data, and merchant
+ownership. Follow-up associations and lifecycle rules live on the relevant
+subclasses. `ReferenceableTransaction` centralizes the shared reference
+association and status validation; captures and refunds also opt into its
+remaining-balance validation.
 
 **Lifecycle changes go through AASM events.** Each STI subclass declares only
 its valid states and transitions. Authorizations move from pending to approved
 or error, then an approved authorization can be captured or voided. Captures
 move from approved to refunded; refund and void records are created as approved
-or error. Repeated same-state capture/refund events preserve the assignment's
-support for multiple partial captures and refunds, while voids remain
-amount-free. Merchant activation and deactivation use the same event-based
-approach. AASM also supplies the subtype scopes and predicate methods used by
-services and views.
+or error. Repeated same-state capture/refund events preserve support for
+multiple partial captures and refunds. Merchant activation and deactivation use
+the same event-based approach. AASM also supplies the subtype scopes and
+predicate methods used by services and views.
 
-**Business logic lives in services, not models or controllers.** Creating a
-transaction has real rules (an invalid capture/refund/void still gets
-persisted with `status: error` rather than rejected outright; a successful
-one flips the status of whatever it references). That's product logic, not
-validation, so it's in `app/services/transactions/*`, and controllers just
-call into it. The stateless `Transactions::CreateAuthorizeService`,
+**Services orchestrate the workflows and return one result shape.** Models own
+their validations and legal lifecycle transitions. The stateless transaction
+services coordinate persistence and related state changes, while controllers
+only authenticate, permit input, delegate, and render the result. An invalid
+capture/refund/void is still persisted with `status: error`; a successful
+follow-up updates the transaction it references. The stateless
+`Transactions::CreateAuthorizeService`,
 `CreateCaptureService`, `CreateRefundService`, and `CreateVoidService` share
-`ApplicationService.call(merchant:, params:)` and return a `ServiceResult`
+the `ApplicationService.call(...)` entry point and return a `ServiceResult`
 with `success?`, `failure?`, `entity`, and `errors`. Each error includes an
 attribute, a symbolic code, and a full message. A saved error transaction is
 a failure result, but still receives HTTP 201; an invalid authorization is
@@ -125,7 +124,9 @@ unsaved and receives HTTP 422. Unexpected infrastructure errors propagate.
 its creation service. `Api::V1::TransactionPresenter` builds the response
 fields for JSON/XML, while the controller chooses the HTTP status. UI and
 API presenters share initialization through `ApplicationPresenter`; UI
-formatting stays separate from the API payload.
+formatting stays separate from the API payload. Dashboard text, display labels,
+and date formats come from `config/locales/en.yml`; translated UI labels do not
+change stored statuses, STI names, or API values.
 
 **Merchant and User are two different things on purpose.** `User` (Devise)
 is the STI base for the people who can sign in to the web UI and owns the
