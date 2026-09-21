@@ -9,18 +9,67 @@ RSpec.describe "Api::V1::Transactions", type: :request do
 
   describe "authentication" do
     it "rejects requests without a token" do
+      expect(Transactions::CreateTransactionService).not_to receive(:call)
       post "/api/v1/transactions", params: { type: "authorize" }
       expect(response).to have_http_status(:unauthorized)
     end
 
     it "rejects requests with a garbage token" do
+      expect(Transactions::CreateTransactionService).not_to receive(:call)
       post "/api/v1/transactions", params: { type: "authorize" },
                                     headers: { "Authorization" => "Bearer garbage" }
       expect(response).to have_http_status(:unauthorized)
     end
 
+    it "rejects an expired token" do
+      expired_token = JsonWebToken.encode({ merchant_id: merchant.id }, 1.minute.ago)
+      expect(Transactions::CreateTransactionService).not_to receive(:call)
+
+      post "/api/v1/transactions", params: { type: "authorize" },
+                                    headers: { "Authorization" => "Bearer #{expired_token}" }
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body).to eq("error" => "invalid or expired token")
+    end
+
+    it "rejects a signed token without a merchant id" do
+      token_without_merchant = JsonWebToken.encode(subject: "api")
+      expect(Transactions::CreateTransactionService).not_to receive(:call)
+
+      post "/api/v1/transactions", params: { type: "authorize" },
+                                    headers: { "Authorization" => "Bearer #{token_without_merchant}" }
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body).to eq("error" => "invalid or expired token")
+    end
+
+    it "rejects a signed token for a nonexistent merchant" do
+      unresolved_token = JsonWebToken.encode(merchant_id: Merchant.maximum(:id).to_i + 1_000)
+      expect(Transactions::CreateTransactionService).not_to receive(:call)
+
+      post "/api/v1/transactions", params: { type: "authorize" },
+                                    headers: { "Authorization" => "Bearer #{unresolved_token}" }
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body).to eq("error" => "invalid or expired token")
+    end
+
+    it "rejects a previously valid token after its merchant is deleted" do
+      deleted_merchant = create(:merchant)
+      deleted_merchant_token = JsonWebToken.encode(merchant_id: deleted_merchant.id)
+      deleted_merchant.destroy!
+      expect(Transactions::CreateTransactionService).not_to receive(:call)
+
+      post "/api/v1/transactions", params: { type: "authorize" },
+                                    headers: { "Authorization" => "Bearer #{deleted_merchant_token}" }
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body).to eq("error" => "invalid or expired token")
+    end
+
     it "rejects an inactive merchant" do
       merchant.update!(status: "inactive")
+      expect(Transactions::CreateTransactionService).not_to receive(:call)
       post "/api/v1/transactions", params: { type: "authorize" }, headers: auth_headers
       expect(response).to have_http_status(:forbidden)
     end

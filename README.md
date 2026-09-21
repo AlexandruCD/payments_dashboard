@@ -139,7 +139,9 @@ UI login per merchant.
 
 Admins issue API tokens from the merchant page through
 `Merchants::IssueApiTokenService`. The token is rendered only in the
-generation response, with HTTP and Turbo caching disabled.
+generation response, with HTTP and Turbo caching disabled. API authentication
+returns 401 for malformed, expired, missing-merchant, or otherwise unresolved
+token identities, and 403 when the resolved merchant is inactive.
 
 **Background jobs are real, but the queue backend differs by environment.**
 `TransactionProcessingJob` delegates settlement to
