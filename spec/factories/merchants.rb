@@ -6,6 +6,6 @@ FactoryBot.define do
     description { Faker::Company.catch_phrase }
     email       { Faker::Internet.unique.email }
     status      { 'active' }
-    association :user
+    association :merchant_user
   end
 end

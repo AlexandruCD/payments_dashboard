@@ -24,8 +24,8 @@ RSpec.describe MerchantRegistrationForm do
 
       it "links the created merchant to the created user" do
         form.save
-        expect(form.merchant.user.email).to eq("acme-login@example.com")
-        expect(form.merchant.user.role).to eq("merchant")
+        expect(form.merchant.merchant_user.email).to eq("acme-login@example.com")
+        expect(form.merchant.merchant_user).to be_a(MerchantUser)
       end
     end
 

@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Admin merchant tokens", type: :request do
   let(:merchant) { create(:merchant) }
-  let(:admin) { create(:user, :admin) }
+  let(:admin) { create(:admin_user) }
 
   def issued_token
     Nokogiri::HTML(response.body).at_css("textarea#api_token").text.strip
@@ -18,7 +18,7 @@ RSpec.describe "Admin merchant tokens", type: :request do
   end
 
   it "denies a merchant user even for their own merchant" do
-    sign_in merchant.user
+    sign_in merchant.merchant_user
     expect(Merchants::IssueApiTokenService).not_to receive(:call)
     post admin_merchant_token_path(merchant)
 

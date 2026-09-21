@@ -1,64 +1,29 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe User, type: :model do
-  subject(:user) { build(:user) }
+  subject(:user) { build(:merchant_user) }
 
-  describe 'associations' do
-    it { is_expected.to have_one(:merchant) }
-  end
-
-  describe 'validations' do
-    it { is_expected.to validate_inclusion_of(:role).in_array(User::ROLES) }
-
-    # Devise validations
+  describe "validations" do
     it { is_expected.to validate_presence_of(:email) }
     it { is_expected.to validate_uniqueness_of(:email).case_insensitive }
     it { is_expected.to validate_presence_of(:password) }
-  end
 
-  describe 'scopes' do
-    before do
-      create(:user, role: 'admin')
-      create(:user, :merchant_user)
-    end
+    it "does not allow the base class to be persisted" do
+      base_user = build(:user)
 
-    it '.admins returns only admin users' do
-      expect(User.admins.map(&:role)).to all(eq('admin'))
-    end
-
-    it '.merchants returns only merchant users' do
-      expect(User.merchants.map(&:role)).to all(eq('merchant'))
+      expect(base_user).not_to be_valid
+      expect(base_user.errors[:type]).to include("can't be blank")
     end
   end
 
-  describe 'predicate methods' do
-    it '#admin? returns true for admin role' do
-      user.role = 'admin'
-      expect(user.admin?).to be true
-    end
+  describe "role predicates" do
+    it "has no privileged role at the base class" do
+      base_user = build(:user)
 
-    it '#admin? returns false for merchant role' do
-      user.role = 'merchant'
-      expect(user.admin?).to be false
-    end
-
-    it '#merchant? returns true for merchant role' do
-      user.role = 'merchant'
-      expect(user.merchant?).to be true
-    end
-
-    it '#merchant? returns false for admin role' do
-      user.role = 'admin'
-      expect(user.merchant?).to be false
-    end
-  end
-
-  describe 'default role' do
-    it 'defaults to merchant role' do
-      user = User.new(email: 'test@example.com', password: 'password123')
-      expect(user.role).to eq('merchant')
+      expect(base_user).not_to be_admin
+      expect(base_user).not_to be_merchant
     end
   end
 end

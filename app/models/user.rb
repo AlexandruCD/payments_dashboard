@@ -5,20 +5,15 @@ class User < ApplicationRecord
   # merchant form, never self-signup.
   devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
-  ROLES = %w[admin merchant].freeze
+  TYPES = %w[AdminUser MerchantUser].freeze
 
-  has_one :merchant
-
-  validates :role, inclusion: { in: ROLES }
-
-  scope :admins,    -> { where(role: "admin") }
-  scope :merchants, -> { where(role: "merchant") }
+  validates :type, presence: true, inclusion: { in: TYPES }
 
   def admin?
-    role == "admin"
+    false
   end
 
   def merchant?
-    role == "merchant"
+    false
   end
 end

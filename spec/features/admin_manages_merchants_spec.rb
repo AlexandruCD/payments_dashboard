@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.feature "Admin manages merchants", type: :feature do
-  let(:admin) { create(:user, :admin) }
+  let(:admin) { create(:admin_user) }
 
   before { sign_in admin }
 
@@ -73,7 +73,7 @@ RSpec.feature "Admin manages merchants", type: :feature do
 
   scenario "non-admins cannot access merchant management" do
     sign_out admin
-    sign_in create(:user, :merchant_user)
+    sign_in create(:merchant_user)
 
     visit admin_merchants_path
 

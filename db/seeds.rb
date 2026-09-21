@@ -5,9 +5,8 @@ SEED_PASSWORD = "password123"
 admin_emails = %w[admin@payments-dashboard.test ops@payments-dashboard.test]
 
 admin_emails.each do |email|
-  User.find_or_create_by!(email: email) do |user|
+  AdminUser.find_or_create_by!(email: email) do |user|
     user.password = SEED_PASSWORD
-    user.role = "admin"
   end
 end
 
@@ -18,16 +17,15 @@ merchants = [
 ]
 
 merchants.each do |attrs|
-  user = User.find_or_create_by!(email: attrs[:email]) do |u|
+  merchant_user = MerchantUser.find_or_create_by!(email: attrs[:email]) do |u|
     u.password = SEED_PASSWORD
-    u.role = "merchant"
   end
 
   Merchant.find_or_create_by!(email: attrs[:email]) do |merchant|
     merchant.name        = attrs[:name]
     merchant.description = attrs[:description]
     merchant.status      = attrs[:status]
-    merchant.user        = user
+    merchant.merchant_user = merchant_user
   end
 end
 

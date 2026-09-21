@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "Admin::Merchants", type: :request do
-  let(:admin) { create(:user, :admin) }
-  let(:merchant_user) { create(:user, :merchant_user) }
+  let(:admin) { create(:admin_user) }
+  let(:merchant_user) { create(:merchant_user) }
 
   describe "GET /admin/merchants" do
     it "redirects non-admins" do

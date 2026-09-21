@@ -17,7 +17,7 @@ RSpec.describe "Transactions", type: :request do
       before do
         own_transaction
         other_transaction
-        sign_in merchant.user
+        sign_in merchant.merchant_user
       end
 
       it "only shows the merchant's own transactions" do
@@ -28,8 +28,19 @@ RSpec.describe "Transactions", type: :request do
       end
     end
 
+    context "as a merchant user without a merchant" do
+      it "shows an empty dashboard" do
+        sign_in create(:merchant_user)
+
+        get transactions_path
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("No transactions yet.")
+      end
+    end
+
     context "as an admin user" do
-      let(:admin) { create(:user, :admin) }
+      let(:admin) { create(:admin_user) }
 
       before do
         create(:authorize_transaction)
@@ -48,14 +59,14 @@ RSpec.describe "Transactions", type: :request do
     let(:transaction) { create(:authorize_transaction, merchant: merchant) }
 
     it "shows a merchant its own transaction" do
-      sign_in merchant.user
+      sign_in merchant.merchant_user
       get transaction_path(transaction)
       expect(response).to have_http_status(:ok)
     end
 
     it "does not let a merchant view another merchant's transaction" do
       other_merchant = create(:merchant)
-      sign_in other_merchant.user
+      sign_in other_merchant.merchant_user
       get transaction_path(transaction)
       expect(response).to have_http_status(:not_found)
     end

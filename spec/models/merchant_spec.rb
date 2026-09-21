@@ -7,7 +7,12 @@ RSpec.describe Merchant, type: :model do
 
   describe 'associations' do
     it { is_expected.to have_many(:transactions).dependent(:restrict_with_error) }
-    it { is_expected.to belong_to(:user) }
+    it do
+      is_expected.to belong_to(:merchant_user)
+        .class_name("MerchantUser")
+        .with_foreign_key(:user_id)
+        .inverse_of(:merchant)
+    end
   end
 
   describe 'validations' do

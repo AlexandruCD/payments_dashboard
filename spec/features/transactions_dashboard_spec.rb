@@ -8,7 +8,7 @@ RSpec.feature "Transactions dashboard", type: :feature do
     create(:authorize_transaction, merchant: merchant, customer_email: "own@example.com")
     create(:authorize_transaction, customer_email: "other@example.com")
 
-    sign_in merchant.user
+    sign_in merchant.merchant_user
     visit transactions_path
 
     expect(page).to have_content("own@example.com")
@@ -21,7 +21,7 @@ RSpec.feature "Transactions dashboard", type: :feature do
     create(:authorize_transaction, merchant: merchant_a, customer_email: "a@example.com")
     create(:authorize_transaction, merchant: merchant_b, customer_email: "b@example.com")
 
-    sign_in create(:user, :admin)
+    sign_in create(:admin_user)
     visit transactions_path
 
     expect(page).to have_content("a@example.com")
@@ -32,7 +32,7 @@ RSpec.feature "Transactions dashboard", type: :feature do
     merchant = create(:merchant)
     transaction = create(:authorize_transaction, merchant: merchant)
 
-    sign_in merchant.user
+    sign_in merchant.merchant_user
     visit transactions_path
     click_link "View"
 

@@ -3,7 +3,7 @@
 class Merchant < ApplicationRecord
   include Auditable
 
-  belongs_to :user
+  belongs_to :merchant_user, class_name: "MerchantUser", foreign_key: :user_id, inverse_of: :merchant
 
   has_many :transactions, dependent: :restrict_with_error
 

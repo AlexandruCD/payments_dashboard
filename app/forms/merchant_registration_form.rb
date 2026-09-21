@@ -21,10 +21,10 @@ class MerchantRegistrationForm
     return false if invalid?
 
     ActiveRecord::Base.transaction do
-      user = User.create!(email: user_email, password: user_password, role: "merchant")
+      merchant_user = MerchantUser.create!(email: user_email, password: user_password)
       @merchant = Merchant.create!(
         name: name, description: description, email: email,
-        status: status, user: user
+        status: status, merchant_user: merchant_user
       )
     end
 
