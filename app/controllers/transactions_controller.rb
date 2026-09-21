@@ -11,11 +11,10 @@ class TransactionsController < AuthenticatedController
 
   private
 
-  # Admins see every transaction; merchant users see their own. A
-  # MerchantUser without a linked Merchant has no transactions.
+  # Admins see every transaction; merchant users see their own.
   def scope
     return Transaction.all if current_user.admin?
 
-    current_user.merchant&.transactions || Transaction.none
+    current_user.merchant.transactions
   end
 end

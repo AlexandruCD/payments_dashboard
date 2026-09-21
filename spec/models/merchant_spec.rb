@@ -7,12 +7,7 @@ RSpec.describe Merchant, type: :model do
 
   describe 'associations' do
     it { is_expected.to have_many(:transactions).dependent(:restrict_with_error) }
-    it do
-      is_expected.to belong_to(:merchant_user)
-        .class_name("MerchantUser")
-        .with_foreign_key(:user_id)
-        .inverse_of(:merchant)
-    end
+    it { is_expected.to have_one(:merchant_user).inverse_of(:merchant).dependent(:destroy) }
   end
 
   describe 'validations' do
@@ -95,6 +90,19 @@ RSpec.describe Merchant, type: :model do
     it 'can be deleted when it has no transactions' do
       merchant = create(:merchant)
       expect { merchant.destroy }.to change(Merchant, :count).by(-1)
+    end
+
+    it 'deletes its UI login when it has no transactions' do
+      merchant = create(:merchant, :with_merchant_user)
+
+      expect { merchant.destroy }.to change(MerchantUser, :count).by(-1)
+    end
+
+    it 'keeps its UI login when transactions prevent deletion' do
+      merchant = create(:merchant, :with_merchant_user)
+      create(:authorize_transaction, merchant: merchant)
+
+      expect { merchant.destroy }.not_to change(MerchantUser, :count)
     end
   end
 end

@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe MerchantUser, type: :model do
   subject(:merchant_user) { build(:merchant_user) }
 
-  it { is_expected.to have_one(:merchant).with_foreign_key(:user_id).inverse_of(:merchant_user) }
+  it { is_expected.to belong_to(:merchant).inverse_of(:merchant_user) }
 
   it "uses the MerchantUser STI type" do
     merchant_user.save!
@@ -18,9 +18,10 @@ RSpec.describe MerchantUser, type: :model do
     expect(merchant_user).not_to be_admin
   end
 
-  it "may temporarily exist without a merchant" do
-    expect(merchant_user).to be_valid
-    expect { merchant_user.save! }.to change(described_class, :count).by(1)
-    expect(merchant_user.merchant).to be_nil
+  it "requires a persisted merchant" do
+    merchant_user.merchant = nil
+
+    expect(merchant_user).not_to be_valid
+    expect(merchant_user.errors[:merchant]).to be_present
   end
 end

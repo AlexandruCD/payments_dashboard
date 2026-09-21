@@ -121,11 +121,12 @@ formatting stays separate from the API payload.
 **Merchant and User are two different things on purpose.** `User` (Devise)
 is the STI base for the people who can sign in to the web UI and owns the
 login password. `AdminUser` and `MerchantUser` provide role-specific
-behaviour; only `MerchantUser` has a merchant association. `Merchant` is the
+behaviour; each `MerchantUser` belongs to one merchant. `Merchant` is the
 business identity that owns transactions and is identified by the JWT's
-`merchant_id`; it has no password of its own. The current registration flow
-creates a `MerchantUser` and its `Merchant` atomically. A `MerchantUser`
-without a merchant is tolerated temporarily and sees no transactions.
+`merchant_id`; it has no password of its own. Admins create the merchant first,
+then can add its optional UI login from the merchant page. The database requires
+every `MerchantUser` to reference exactly one merchant and permits at most one
+UI login per merchant.
 
 Admins issue API tokens from the merchant page through
 `Merchants::IssueApiTokenService`. The token is rendered only in the

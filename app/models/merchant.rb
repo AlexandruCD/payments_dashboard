@@ -3,9 +3,8 @@
 class Merchant < ApplicationRecord
   include Auditable
 
-  belongs_to :merchant_user, class_name: "MerchantUser", foreign_key: :user_id, inverse_of: :merchant
-
   has_many :transactions, dependent: :restrict_with_error
+  has_one :merchant_user, inverse_of: :merchant, dependent: :destroy
 
   STATUSES = %w[active inactive].freeze
 

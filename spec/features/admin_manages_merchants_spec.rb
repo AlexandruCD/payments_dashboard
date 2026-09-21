@@ -15,14 +15,19 @@ RSpec.feature "Admin manages merchants", type: :feature do
     fill_in "Description", with: "Retailer"
     fill_in "Email", with: "acme@example.com"
     select "active", from: "Status"
-    fill_in "Login email", with: "acme-login@example.com"
-    fill_in "Login password", with: "password123"
     click_button "Create Merchant"
 
-    expect(page).to have_content("Merchant created.")
+    expect(page).to have_content("Merchant created. Add a UI login when needed.")
     expect(page).to have_content("Acme Corp")
-    expect(Merchant.find_by(email: "acme@example.com")).to be_present
-    expect(User.find_by(email: "acme-login@example.com")).to be_present
+    merchant = Merchant.find_by!(email: "acme@example.com")
+    expect(merchant.merchant_user).to be_nil
+
+    fill_in "Login email", with: "acme-login@example.com"
+    fill_in "Login password", with: "password123"
+    click_button "Create UI login"
+
+    expect(page).to have_content("Merchant UI login created.")
+    expect(merchant.reload.merchant_user.email).to eq("acme-login@example.com")
   end
 
   scenario "generating a merchant API token" do

@@ -18,7 +18,7 @@ RSpec.describe "Admin merchant tokens", type: :request do
   end
 
   it "denies a merchant user even for their own merchant" do
-    sign_in merchant.merchant_user
+    sign_in create(:merchant_user, merchant: merchant)
     expect(Merchants::IssueApiTokenService).not_to receive(:call)
     post admin_merchant_token_path(merchant)
 

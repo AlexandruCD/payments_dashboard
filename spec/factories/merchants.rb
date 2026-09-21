@@ -6,6 +6,9 @@ FactoryBot.define do
     description { Faker::Company.catch_phrase }
     email       { Faker::Internet.unique.email }
     status      { 'active' }
-    association :merchant_user
+
+    trait :with_merchant_user do
+      after(:create) { |merchant| create(:merchant_user, merchant: merchant) }
+    end
   end
 end

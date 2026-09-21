@@ -11,6 +11,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     resources :merchants do
+      resource :merchant_user, only: :create
       resource :token, only: :create, controller: "merchant_tokens"
     end
   end

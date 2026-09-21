@@ -26,22 +26,19 @@ RSpec.describe "Admin::Merchants", type: :request do
 
     let(:valid_params) do
       {
-        merchant_registration_form: {
-          name: "Acme", description: "Retail", email: "acme@example.com", status: "active",
-          user_email: "acme-login@example.com", user_password: "password123"
-        }
+        merchant_form: { name: "Acme", description: "Retail", email: "acme@example.com", status: "active" }
       }
     end
 
-    it "creates a merchant and its user" do
+    it "creates a merchant without a user" do
       expect { post admin_merchants_path, params: valid_params }
-        .to change(Merchant, :count).by(1).and change(User, :count).by(1)
+        .to change(Merchant, :count).by(1).and change(User, :count).by(0)
 
       expect(response).to redirect_to(admin_merchant_path(Merchant.last))
     end
 
     it "re-renders the form when invalid" do
-      post admin_merchants_path, params: { merchant_registration_form: { name: "" } }
+      post admin_merchants_path, params: { merchant_form: { name: "" } }
       expect(response).to have_http_status(:unprocessable_content)
     end
   end

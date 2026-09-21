@@ -9,6 +9,7 @@ FactoryBot.define do
     end
 
     factory :merchant_user, class: 'MerchantUser' do
+      association :merchant
     end
   end
 end

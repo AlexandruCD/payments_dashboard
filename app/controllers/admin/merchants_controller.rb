@@ -9,18 +9,18 @@ module Admin
     end
 
     def show
-      @transactions = @merchant.transactions.order(created_at: :desc).map { |t| TransactionPresenter.new(t) }
+      load_show_data
     end
 
     def new
-      @form = MerchantRegistrationForm.new
+      @form = MerchantForm.new
     end
 
     def create
-      @form = MerchantRegistrationForm.new(merchant_registration_params)
+      @form = MerchantForm.new(merchant_form_params)
 
       if @form.save
-        redirect_to admin_merchant_path(@form.merchant), notice: "Merchant created."
+        redirect_to admin_merchant_path(@form.merchant), notice: "Merchant created. Add a UI login when needed."
       else
         render :new, status: :unprocessable_content
       end
@@ -54,9 +54,13 @@ module Admin
       params.require(:merchant).permit(:name, :description, :email, :status)
     end
 
-    def merchant_registration_params
-      params.require(:merchant_registration_form)
-            .permit(:name, :description, :email, :status, :user_email, :user_password)
+    def merchant_form_params
+      params.require(:merchant_form).permit(:name, :description, :email, :status)
+    end
+
+    def load_show_data
+      @transactions = @merchant.transactions.order(created_at: :desc).map { |t| TransactionPresenter.new(t) }
+      @merchant_user_form = MerchantUserForm.new(merchant: @merchant) unless @merchant.merchant_user
     end
   end
 end

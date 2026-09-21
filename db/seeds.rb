@@ -17,15 +17,15 @@ merchants = [
 ]
 
 merchants.each do |attrs|
-  merchant_user = MerchantUser.find_or_create_by!(email: attrs[:email]) do |u|
-    u.password = SEED_PASSWORD
+  merchant = Merchant.find_or_create_by!(email: attrs[:email]) do |record|
+    record.name        = attrs[:name]
+    record.description = attrs[:description]
+    record.status      = attrs[:status]
   end
 
-  Merchant.find_or_create_by!(email: attrs[:email]) do |merchant|
-    merchant.name        = attrs[:name]
-    merchant.description = attrs[:description]
-    merchant.status      = attrs[:status]
-    merchant.merchant_user = merchant_user
+  MerchantUser.find_or_create_by!(merchant: merchant) do |user|
+    user.email = attrs[:email]
+    user.password = SEED_PASSWORD
   end
 end
 

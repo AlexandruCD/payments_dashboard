@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.feature "Transactions dashboard", type: :feature do
   scenario "a merchant only sees their own transactions" do
-    merchant = create(:merchant)
+    merchant = create(:merchant, :with_merchant_user)
     create(:authorize_transaction, merchant: merchant, customer_email: "own@example.com")
     create(:authorize_transaction, customer_email: "other@example.com")
 
@@ -29,7 +29,7 @@ RSpec.feature "Transactions dashboard", type: :feature do
   end
 
   scenario "viewing a transaction's detail page" do
-    merchant = create(:merchant)
+    merchant = create(:merchant, :with_merchant_user)
     transaction = create(:authorize_transaction, merchant: merchant)
 
     sign_in merchant.merchant_user

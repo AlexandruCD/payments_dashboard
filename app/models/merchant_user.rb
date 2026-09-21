@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 class MerchantUser < User
-  has_one :merchant, foreign_key: :user_id, inverse_of: :merchant_user
+  belongs_to :merchant, inverse_of: :merchant_user
+
+  validates :merchant_id, uniqueness: true
 
   def merchant?
     true

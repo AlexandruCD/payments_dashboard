@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.feature "Authentication", type: :feature do
-  let(:merchant) { create(:merchant) }
+  let(:merchant) { create(:merchant, :with_merchant_user) }
 
   scenario "an admin signs in through the shared User session" do
     admin = create(:admin_user)
